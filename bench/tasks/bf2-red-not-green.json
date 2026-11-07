@@ -1,0 +1,11 @@
+{
+  "task": "bf2-red-not-green",
+  "kind": "bugfix",
+  "base": "d5b7eb6d",
+  "overlay_commit": "9362ef06",
+  "overlay": ["tests/test_merge_queue.py"],
+  "verify_tests": ["tests/test_merge_queue.py"],
+  "protected": ["tests/test_merge_queue.py"],
+  "needs_venv": false,
+  "statement": "Симптом: очередь выдала сертификат PUBLISHED на прогоне, который сам напечатал «ИТОГ: КРАСНЫЙ». Вердикт сертифицируется по наличию подстроки в логе, а не по состоянию прогона, и выживший потомок гейта не мешает сертификации. Исправь tests/merge_queue.py: зелёный сертификат должен выдаваться только действительно зелёному прогону — и это должно быть истинной проверкой, а не формой без последствий. Красные клетки tests/test_merge_queue.py — твоё техзадание. Тесты менять нельзя."
+}

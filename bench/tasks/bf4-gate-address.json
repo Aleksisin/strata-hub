@@ -1,0 +1,11 @@
+{
+  "task": "bf4-gate-address",
+  "kind": "bugfix",
+  "base": "9862eed1",
+  "overlay_commit": "ae08ef20",
+  "overlay": ["tests/test_merge_queue.py"],
+  "verify_tests": ["tests/test_merge_queue.py"],
+  "protected": ["tests/test_merge_queue.py"],
+  "needs_venv": false,
+  "statement": "Симптом: интеграционный гейт выносит вердикт по СВОЕМУ собственному расположению, а не по дереву кандидата: когда базовый гейт специально положен во временный каталог (чтобы кандидат не мог до него дотянуться), контур судит системный TEMP. Исправь tests/merge_queue.py: гейт должен судить дерево кандидата. Красные клетки tests/test_merge_queue.py — твоё техзадание. Тесты менять нельзя."
+}

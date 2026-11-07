@@ -1,0 +1,15 @@
+{
+  "task": "d2-clone-only-triage",
+  "kind": "diagnosis",
+  "base": "8a2219b1",
+  "overlay": [],
+  "overlay_commit": "8a2219b1",
+  "verify_tests": [],
+  "protected": [],
+  "needs_venv": false,
+  "evidence_files": ["d2-bare-clone-red.log"],
+  "answer_path": "answer.json",
+  "answer_required_keys": ["root_cause", "affected_tests", "remediation", "adr_refs"],
+  "answer_must_contain": ["triage_scanner", ".venv", "adr-0070"],
+  "statement": "Симптом: в этой свежей копии тест DiagnosticPipeline/tests/test_triage_scanner_interpreter.py отказывает, а в главном дереве — зелёный. То же происходит у бат-раннеров, которые держат свой venv в нестандартном месте (mutex-fresh и подобные). Разберись в причине класса: читай резолвер интерпретатора в DiagnosticPipeline/triage_scanner.py, сам тест и доказательство — evidence/d2-bare-clone-red.log (реальный красный прогон этой копии без venv). Код копии не меняй — напиши отчёт answer.json В КОРНЕ копии: {\"root_cause\": \"...\", \"affected_tests\": [...], \"remediation\": \"...\", \"adr_refs\": [...]}. В root_cause назови конкретный механизм (что и где резолвер требует), в adr_refs — документы, фиксирующие контракт."
+}

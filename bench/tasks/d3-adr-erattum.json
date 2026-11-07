@@ -1,0 +1,16 @@
+{
+  "task": "d3-adr-erattum",
+  "kind": "diagnosis",
+  "base": "8a2219b1",
+  "overlay": [],
+  "overlay_commit": "8a2219b1",
+  "verify_tests": [],
+  "protected": [],
+  "needs_venv": false,
+  "evidence_files": [],
+  "answer_path": "answer.json",
+  "answer_required_keys": ["stale_claim", "refuted_by", "erratum_plan"],
+  "answer_must_contain": ["adr-0166", "implicit-cursor"],
+  "answer_regex": {"refuted_by.commit": "^[0-9a-f]{7,40}$"},
+  "statement": "Подозрение ревью: в docs/decisions/ADR-0166 содержится заявление вида «остаётся открытой проблемой реализации» про implicit-cursor fetch bypass, но это опровергнуто опубликованным ремонтом. Разберись по истории этой копии (git log/show работают) и по документам: (а) назови точное устаревшее заявление — файл, строки, цитата; (б) какой merge/фикс и что именно опроверг заявление; (в) как оформить правку по механике Erratum (найди прецедент — ADR-0083). Код и документы копии не меняй — напиши отчёт answer.json В КОРНЕ копии: {\"stale_claim\": {\"file\": \"...\", \"lines\": \"...\", \"quote\": \"...\"}, \"refuted_by\": {\"commit\": \"<хэш>\", \"what\": \"...\"}, \"erratum_plan\": \"...\"}."
+}

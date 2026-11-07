@@ -1,0 +1,11 @@
+{
+  "task": "bf5-range-key",
+  "kind": "bugfix",
+  "base": "8142201a",
+  "overlay_commit": "6d733d1e",
+  "overlay": ["tests/test_became_facts_probe.py"],
+  "verify_tests": ["tests/test_became_facts_probe.py"],
+  "protected": ["tests/test_became_facts_probe.py"],
+  "needs_venv": false,
+  "statement": "Симптом: проверка «проза дельты соответствует носителю» краснеет на дословной форме из носителя, когда число записано диапазоном («108–109 $/барр»): в ключ сверки попадает только левое число, правый конец живёт лишь в метке. Исправь .claude/skills/ibf-analysis-delta/scripts/check_became_facts.py: форма, дословно стоящая в носителе, не должна краснеть. Красные клетки tests/test_became_facts_probe.py — твоё техзадание. Тесты менять нельзя."
+}

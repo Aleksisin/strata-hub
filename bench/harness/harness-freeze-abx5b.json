@@ -1,0 +1,116 @@
+{
+ "frozen_utc": "2026-11-06T20:09:31Z",
+ "series": "abx5b",
+ "model": "nanoplus-v3 8107 via agentgw",
+ "caps": {
+  "max_rounds": 80,
+  "max_tool_calls": 250,
+  "wall_timeout_s": 3000,
+  "max_tokens_per_request": 16384,
+  "temperature": 0.2,
+  "seed": 42,
+  "read_file_cap_bytes": 12000,
+  "read_repeat_hint_at": 3,
+  "trim_budget_chars": 200000,
+  "trim_keep_tail": 10,
+  "http_timeout_s": 1200,
+  "nudge_rounds_no_edits": [
+   12,
+   28,
+   45
+  ],
+  "stalled_after_edit_hint": 15,
+  "job_timeout_s": 4200
+ },
+ "engine_config": {
+  "server_flags": [
+   "-m <MODEL>",
+   "--mmproj <MMPROJ>",
+   "--host 127.0.0.1",
+   "--port 8107",
+   "-ngl 99",
+   "-c 131072",
+   "-np 1",
+   "-fa on",
+   "-ctk q4_0",
+   "-ctv q4_0",
+   "--reasoning-budget 16384",
+   "--jinja",
+   "--chat-template-kwargs {\"reasoning_effort\":\"low\"}",
+   "--temp 0.6",
+   "--top-p 0.95",
+   "--top-k 20",
+   "--min-p 0.05",
+   "--threads 8"
+  ],
+  "mtp": {
+   "enabled": false,
+   "history": {
+    "2026-11-05T00:43Z": "draft-mtp n-max 3 frozen after depth sweep (depth3 33.8/74.7 t/s at 2K probe ctx, acceptance 0.72/0.68)",
+    "2026-11-05T18:30Z": "REVERTED by operator verdict: with MTP3@131K the whole abx4 series ran at ~3.8 t/s decode (4761 print_timing samples; acceptance >=0.5 in all 116) -> 4x infra timeout + 2x wall-cap; no-MTP 128K-era log median 33.8 t/s on identical workloads. Root cause (mechanism probable, final confirmation requires direct shared-GPU-memory measurement): draft-MTP costs ~3 GiB VRAM (llama.cpp b11200 measured by ComputingForGeeks; external rule 'MTP up to ~8K ctx, long context without MTP'), boot printed 'failed to fit params to free device memory' -> VRAM placement degradation on 16GB RTX 5070 Ti (WDDM spill probable). Clean no-MTP boot has NO fit warning.",
+    "cross_check": "insidepc.tech VRAM/coding articles (29.10/04.11.2026): MTP +3.0 GiB in llama.cpp vs +1.1 GiB in Ollama; 27B KV-cache 64 KiB/token f16 (16 of 64 layers full attention), q4_0 = 28% -> ~2.25 GiB at 131K; weights 10.41 GiB + mmproj 0.87 + KV 2.25 + buffers ~1.5 + fit-reserve 1.0 ~= 15.2 GiB of ~15.5 usable: no-MTP barely fits, MTP does not. MTP also breaks byte-level output determinism vs plain generation (92-100% divergence on 1600 tokens) - unacceptable for seed-pinned benchmark series.",
+    "candidate_future": "MTP retest only at ctx 16-32K (bat comment claims 66-78 t/s at 16K) or after quant change; not before baseline",
+    "2026-11-05T23:00Z": "Review 05.11 late evening: rollback justified; WDDM-spill mechanism not finally confirmed (needs direct shared-GPU-memory measurement); MTP does not auto-invalidate benchmarks (byte-comparison just cannot be the only correctness test); abx4 kept as negative experiment, excluded from main A/B",
+    "2026-11-06T20:00Z": "PROVISIONAL GO by operator review: budget 16384 adopted into production bat (smoke 3/3 + full set 9/10, zero regressions; bf2 flipped to SUCCESS - attribution UNPROVEN, may be variance). Rollback = harness-freeze-abx5.json (no budget). Runner hash for this series: c385ee1d (strict fvp)."
+   }
+  }
+ },
+ "tools": [
+  "list_dir",
+  "read_file",
+  "write_file",
+  "apply_patch",
+  "run_tests",
+  "git_diff",
+  "git_log",
+  "git_show",
+  "finish"
+ ],
+ "files": {
+  "runner": {
+   "path": "C:\\Users\\shogu\\Strata-Hub\\agentbench\\agentbench_runner.py",
+   "sha256": "03dae92e8fbb3217f7636b088b0cd1642b1a6518f1af818667a5f8c025da1f5d",
+   "bytes": 21521
+  },
+  "tools": {
+   "path": "C:\\Users\\shogu\\Strata-Hub\\agentbench\\abtools.py",
+   "sha256": "436c91ed77ae5bf0abf22711ef0ffd41a7927513ca2ee5a7506437db901d06c7",
+   "bytes": 16470
+  },
+  "task_loader": {
+   "path": "C:\\Users\\shogu\\Strata-Hub\\agentbench\\mkagentbench.py",
+   "sha256": "89339ce83ffc771b2c4ff3d560a133bef3437e9721237226b1d463a009c1cf34",
+   "bytes": 2462
+  },
+  "gateway": {
+   "path": "C:\\Users\\shogu\\Strata-Hub\\agentgw\\agentgw.py",
+   "sha256": "07cfb5ca8cf7582e0479ee53c79d6fa87f2230a086d996e6f4a740f25180624d",
+   "bytes": 20710
+  },
+  "engine_binary": {
+   "path": "C:\\Users\\shogu\\.unsloth\\llama.cpp\\build\\bin\\Release\\llama-server.exe",
+   "sha256": "145c65854b14cc65eb09836a2b8013ce2192c34460556920cf15aa6400dfedec",
+   "bytes": 26432
+  },
+  "model_gguf": {
+   "path": "C:\\Users\\shogu\\Strata-Hub\\models\\Qwen3.8-27B-EfficientThink-NanoPlus-V3\\Qwen3.8-27B-EfficientThink-VAL-APEX-I-NanoPlus-V3.gguf",
+   "sha256": "b1d53e5e678ed35e10272085fe31c0a78cb9716e701fbd7b65220de87aa171c4",
+   "bytes": 11176175232
+  },
+  "supervisor": {
+   "path": "C:\\Users\\shogu\\Strata-Hub\\supervisor\\supervisor.py",
+   "sha256": "c85d3c5f81d042e3744d3558f2f8deb6f484a4989d458f6af1a63de46ea92761",
+   "bytes": 31587
+  }
+ },
+ "delta_vs_abx3": [
+  "runner: metric renamed first_try -> first_verification_pass (alias kept); report field only, no agent-visible change",
+  "engine: IDENTICAL to abx3 (no-MTP, 131K, q4_0 KV, same binary/model hashes) - harness v2 vs v1 is the only variable in the comparison",
+  "first abx4 attempt (MTP3@131K, 4/10 + 4 infra + 2 wall-cap) INVALIDATED by 3.8 t/s engine state; run dirs moved to runs\\_invalid-abx4-mtp3\\"
+ ],
+ "history_label": {
+  "abx4": "INVALIDATED: first attempt ran on draft-MTP3@131K engine (3.8 t/s spill); run dirs in runs/_invalid-abx4-mtp3/",
+  "abx5": "clean no-MTP re-run per operator verdict 05.11"
+ },
+ "provisional": true
+}

@@ -1,0 +1,11 @@
+{
+  "task": "bf3-expires-at",
+  "kind": "bugfix",
+  "base": "5c175e1e",
+  "overlay_commit": "f9af8e1c",
+  "overlay": ["tests/test_merge_queue.py"],
+  "verify_tests": ["tests/test_merge_queue.py"],
+  "protected": ["tests/test_merge_queue.py"],
+  "needs_venv": false,
+  "statement": "Симптом: свип падаёт с OverflowError на маркере аренды, у которого expires_at — экстремально большое целое (сотни цифр): одно поле маркера роняет весь прогон вместо именованного отказа. Исправь tests/merge_queue.py: нечитаемое значение срока — «неизвестное» состояние, а неизвестное никогда не разрешает удаление; кроме того, checkout, переживший собственную уборку, должен быть поименован, а не отмечен как готовый. Красные клетки tests/test_merge_queue.py — твоё техзадание. Тесты менять нельзя."
+}

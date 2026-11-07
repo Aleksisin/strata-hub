@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NanoPlus V3 · монитор 8107</title>
+<style>
+:root{--bg:#101418;--surface:#171d24;--surface2:#1e2630;--line:#2a3441;--ink:#e6ebf2;--muted:#8b98a9;--accent:#4f9cf9;--ok:#3fb96f;--warn:#e2a93b;--bad:#e05c5c;--mono:ui-monospace,Consolas,monospace}
+[data-theme=light]{--bg:#f4f6f9;--surface:#ffffff;--surface2:#eef1f5;--line:#d8dee7;--ink:#1a222d;--muted:#5d6b7e;--accent:#2f6fd0;--ok:#2c8f55;--warn:#b57e17;--bad:#c24545}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,"Segoe UI",sans-serif}
+header{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;border-bottom:1px solid var(--line);background:var(--surface)}
+header h1{font-size:18px;margin:0}header .sub{color:var(--muted);font-size:12px;margin-left:12px}
+button{font:inherit;cursor:pointer;color:var(--ink);background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:6px 12px}
+button:hover{border-color:var(--accent)}
+main{max-width:1400px;margin:auto;padding:20px 24px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
+.value{font-size:24px;font-weight:600;margin-top:2px}
+.small{font-size:12px;color:var(--muted)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--muted);margin-right:8px}
+.dot.busy{background:var(--warn);animation:pulse 1.2s infinite}.dot.idle{background:var(--ok)}.dot.down{background:var(--bad)}
+@keyframes pulse{50%{opacity:.4}}
+.bar{height:9px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--accent);width:0%}
+.bar i.hot{background:var(--warn)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.charts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+canvas{width:100%;height:64px;display:block}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11px;color:var(--muted);text-transform:uppercase;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);letter-spacing:.6px}
+td{padding:7px 10px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+td.mono,th.mono{font-family:var(--mono);font-size:12px}
+.tag{font-size:11px;border-radius:5px;padding:2px 7px;background:var(--surface2);color:var(--muted)}
+.tag.active{color:var(--warn-text,#b57e17);background:rgba(226,169,59,.15)}
+.tag.done{color:var(--ok);background:rgba(63,185,111,.12)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-top:12px;overflow:hidden}
+.panel-bar{padding:11px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.logbox{max-height:340px;overflow:auto}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;font-size:12.5px}
+.kv b{font-weight:500;font-family:var(--mono)}
+footer{color:var(--muted);font-size:11.5px;margin:14px 4px}
+@media(max-width:1000px){.cards,.charts{grid-template-columns:repeat(2,1fr)}.row2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div style="display:flex;align-items:baseline"><h1>NanoPlus V3 — монитор прод-движка</h1><span class="sub">llama-server 8107 · panel 8091 · только чтение</span></div>
+<div><button id="theme">Светлая/тёмная</button></div></header>
+<main>
+<div class="cards">
+  <div class="card"><div class="label">Движок</div>
+    <div class="value"><span id="dot" class="dot"></span><span id="state">—</span></div>
+    <div class="small" id="model">—</div>
+    <div class="small" id="pid">—</div></div>
+  <div class="card"><div class="label">Контекст слота</div>
+    <div class="value" id="ctxv">—</div>
+    <div class="bar"><i id="ctxbar"></i></div>
+    <div class="small" id="ctxnote">—</div></div>
+  <div class="card"><div class="label">Скорость сейчас</div>
+    <div class="value"><span id="cts">—</span> <span class="small">т/с decode</span></div>
+    <div class="small" id="pts">prefill: —</div>
+    <div class="small" id="avgts">средняя (сервер): —</div></div>
+  <div class="card"><div class="label">GPU</div>
+    <div class="value" id="vram">—</div>
+    <div class="small" id="gpuinfo">—</div></div>
+</div>
+
+<div class="row2">
+  <div class="card"><div class="label">Счётчики всего (с запуска движка)</div>
+    <div class="kv" style="margin-top:8px">
+      <span>prefill токенов</span><b id="cpt">—</b>
+      <span>generated токенов</span><b id="cgt">—</b>
+      <span>из кэша</span><b id="cct">—</b>
+      <span>decode-вызовов</span><b id="cnd">—</b>
+    </div></div>
+  <div class="card"><div class="label">Параметры текущего/последнего запроса</div>
+    <div class="kv" style="margin-top:8px" id="params">—</div></div>
+</div>
+
+<div class="charts">
+  <div class="chart"><div class="label">decode т/с</div><canvas id="ch1" width="300" height="64"></canvas></div>
+  <div class="chart"><div class="label">prefill т/с</div><canvas id="ch2" width="300" height="64"></canvas></div>
+  <div class="chart"><div class="label">контекст (токенов)</div><canvas id="ch3" width="300" height="64"></canvas></div>
+  <div class="chart"><div class="label">GPU память (МиБ)</div><canvas id="ch4" width="300" height="64"></canvas></div>
+</div>
+
+<div class="panel">
+  <div class="panel-bar"><b>Журнал запросов</b><span class="small" id="updated">—</span></div>
+  <div class="logbox"><table><thead><tr><th>время</th><th>задача</th><th>статус</th><th class="mono">prompt ток.</th><th class="mono">generated</th><th class="mono">prefill т/с</th><th class="mono">decode т/с</th><th class="mono">длит.</th></tr></thead>
+  <tbody id="log"><tr><td colspan="8" class="small" style="text-align:center;padding:30px">Ожидание данных…</td></tr></tbody></table></div>
+</div>
+<footer>Источники: 8107 /health /props /slots /metrics + nvidia-smi. Опрос 2 с, история 8 мин, журнал 100 запросов. Панель только читает — на движок не влияет.
+<br><span id="jrnl"></span></footer>
+</main>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+document.documentElement.dataset.theme=localStorage.getItem("p8107.theme")||"dark";
+$("theme").onclick=()=>{const t=document.documentElement.dataset.theme==="dark"?"light":"dark";document.documentElement.dataset.theme=t;localStorage.setItem("p8107.theme",t)};
+const f1=n=>typeof n==="number"?(Math.round(n*10)/10).toString():"—";
+const fmtT=n=>typeof n==="number"?n.toLocaleString("ru-RU"):"—";
+const dur=(a,b)=>{if(!a)return "—";const s=Math.max(1,Math.round((b||Date.now()/1000)-a));return s<90?s+"с":Math.round(s/60)+"м"};
+let prevLog="";
+function spark(id,vals,color,max){
+  const c=$(id),ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);
+  if(!vals.length)return;
+  const m=max||Math.max(...vals,1);
+  ctx.strokeStyle=color;ctx.lineWidth=1.6;ctx.beginPath();
+  vals.forEach((v,i)=>{const x=i/(Math.max(vals.length-1,1))*c.width;const y=c.height-3-(v/m)*(c.height-8);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});
+  ctx.stroke();
+  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue("--muted");
+  ctx.font="10px system-ui";ctx.fillText(vals.length?Math.round(m).toString():"",2,10);
+}
+function render(s){
+  const busy=s.slot&&s.slot.is_processing,h=!!s.health;
+  $("dot").className="dot "+(h?(busy?"busy":"idle"):"down");
+  $("state").textContent=h?(busy?"обрабатывает":"простаивает"):"нет связи";
+  $("model").textContent=s.model||"—";
+  $("pid").textContent=s.engine_pid?("PID "+s.engine_pid+" · запущен "+(s.engine_started||"?")):"—";
+  const nctx=s.slot&&s.slot.n_ctx||s.n_ctx||131072,ctx=s.slot?(s.slot.n_prompt_tokens||0):0;
+  const pct=Math.min(100,Math.round(ctx/nctx*1000)/10);
+  $("ctxv").textContent=fmtT(ctx)+" / "+fmtT(nctx);
+  $("ctxbar").style.width=pct+"%";$("ctxbar").className=pct>80?"hot":"";
+  $("ctxnote").textContent=(s.slot&&s.slot.n_prompt_tokens_cache?("кэш: "+fmtT(s.slot.n_prompt_tokens_cache)+" · "):"")+"заполнение "+pct+"%";
+  $("cts").textContent=s.live&&s.live.c_ts!=null?f1(s.live.c_ts):"0";
+  $("pts").textContent="prefill: "+(s.live&&s.live.p_ts!=null?f1(s.live.p_ts):"0")+" т/с"+(s.live&&s.live.p_tok?(" ("+fmtT(s.live.p_tok)+" ток/опрос)"):"");
+  const c=s.counters||{};
+  $("avgts").textContent="средняя (сервер): decode "+f1(c["llamacpp:predicted_tokens_seconds"])+" · prefill "+f1(c["llamacpp:prompt_tokens_seconds"])+" т/с";
+  const g=s.gpu||{};
+  $("vram").textContent=g.mem_used!=null?(g.mem_used+" / "+g.mem_total+" МиБ"):"—";
+  $("gpuinfo").textContent=g.temp!=null?("t "+g.temp+"° · "+g.power_w+" Вт · SM "+g.sm_clock+" МГц · загрузка "+g.util+"%"):(g.error||"nvidia-smi недоступен");
+  $("cpt").textContent=fmtT(c["llamacpp:prompt_tokens_total"]);
+  $("cgt").textContent=fmtT(c["llamacpp:tokens_predicted_total"]);
+  $("cct").textContent=fmtT(c["llamacpp:prompt_tokens_cached_total"]);
+  $("cnd").textContent=fmtT(c["llamacpp:n_decode_total"]);
+  const p=s.params||{};
+  const rnd=v=>typeof v==="number"?(Math.round(v*1000)/1000):v;
+  $("params").innerHTML=[["temperature",rnd(p.temperature)],["top_k",p.top_k],["top_p",rnd(p.top_p)],["min_p",rnd(p.min_p)],["max_tokens",p.max_tokens],["stream",p.stream]].map(([k,v])=>`<span>${k}</span><b>${v==null?"—":v}</b>`).join("");
+  const hist=s.hist||[];
+  spark("ch1",hist.map(x=>x.c_ts),"#4f9cf9");
+  spark("ch2",hist.map(x=>x.p_ts),"#3fb96f",3000);
+  spark("ch3",hist.map(x=>x.ctx),"#e2a93b",131072);
+  spark("ch4",hist.map(x=>x.mem),"#e05c5c",16384);
+  const rows=(s.events||[]).slice(0,100).map(e=>{
+    const t=new Date(e.started*1000).toLocaleTimeString("ru-RU");
+    return `<tr><td>${t}</td><td class="mono">#${e.task}</td><td><span class="tag ${e.state==="active"?"active":"done"}">${e.state==="active"?"активен":"завершён"}</span></td><td class="mono">${fmtT(e.prompt)}</td><td class="mono">${fmtT(e.c_tok)}</td><td class="mono">${f1(e.p_ts)}</td><td class="mono">${f1(e.c_ts)}</td><td class="mono">${dur(e.started,e.ended)}</td></tr>`;
+  }).join("");
+  const html=rows||'<tr><td colspan="8" class="small" style="text-align:center;padding:30px">Запросов пока не было</td></tr>';
+  if(html!==prevLog){$("log").innerHTML=html;prevLog=html}
+  const j=s.journal;
+  $("jrnl").textContent=j?("долгожурнал: "+j.samples+" ("+fmtT(j.samples_bytes)+" Б) · "+j.events+" ("+fmtT(j.events_bytes)+" Б)"):"";
+  $("updated").textContent="Обновлено "+new Date().toLocaleTimeString("ru-RU")+(s.last_error?(" · "+s.last_error):"");
+}
+async function tick(){
+  try{const r=await fetch("/api/state",{cache:"no-store"});render(await r.json())}
+  catch(e){$("updated").textContent="Нет связи с панелью · повтор…"}
+  setTimeout(tick,2000);
+}
+tick();
+</script>
+</body></html>

@@ -1,0 +1,16 @@
+{
+  "task": "d1-compression-casualties",
+  "kind": "diagnosis",
+  "base": "80a6f99f",
+  "overlay": [],
+  "overlay_commit": "80a6f99f",
+  "verify_tests": [],
+  "protected": [],
+  "needs_venv": false,
+  "evidence_files": ["d1-discriminator-red.log", "d1-tail-reader-red.log"],
+  "answer_path": "answer.json",
+  "answer_required_keys": ["victims", "mechanism", "repair_plan"],
+  "answer_must_contain": ["045", "046", "adr-0166", "122"],
+  "answer_extra": {"victims_min": 3},
+  "statement": "Симптом: сжатие снимка (коммит 80a6f99f — он же база этой копии) привело контур в красный: счётчики измерительных меток не сходятся (tests/test_measurement_discriminator.py — красный, см. evidence/), читатель реестра хвостов потерял свой пункт (evidence/), производные документа жалуются на расхождения. Разберись: (а) какие НЕСУЩИЕ элементы сняло сжатие и кто на них читал (конкретные идентификаторы); (б) каков класс повреждения; (в) что и куда вернуть для ремонта. Код и данные копии не меняй — напиши отчёт answer.json В КОРНЕ копии: {\"victims\": [...], \"mechanism\": \"...\", \"repair_plan\": [{\"file\": \"...\", \"action\": \"...\"}]}. В victims перечисли все пострадавшие несущие элементы. Историю копии можно читать (git log/show работают)."
+}

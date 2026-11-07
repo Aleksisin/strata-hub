@@ -1,0 +1,24 @@
+{
+  "task": "i2-tail-registry-synthetic",
+  "kind": "integration",
+  "base": "e825fc32^",
+  "overlay": [],
+  "overlay_commit": "e825fc32^",
+  "verify_tests": ["tests/test_tail_registry_reading.py"],
+  "protected": ["scripts/tail_registry.py", "docs/handoff/state.md"],
+  "needs_venv": false,
+  "guard_test_file": "tests/test_tail_registry_reading.py",
+  "verify_steps": [
+    {"run": "must_pass"},
+    {"mutate": {"file": "docs/handoff/state.md",
+                "kind": "remove_line",
+                "pattern": "^107\\. "},
+     "run": "must_pass"},
+    {"mutate": {"file": "scripts/tail_registry.py",
+                "kind": "replace",
+                "old": "    closed = any(w in without_negated for w in CLOSED_WORDS)",
+                "new": "    closed = False"},
+     "run": "must_fail"}
+  ],
+  "statement": "tests/test_tail_registry_reading.py частично читает ЖИВОЙ снимок docs/handoff/state.md — класс жертв сжатия: любое изменение снимка краснит клетки (история: сжатие 80a6f99f сняло пункт реестра — клетка легла). Переведи клетки теста на синтетический вход: механизм и история — в докстринге модуля scripts/tail_registry.py и в самом тесте (прецедент: живой образец переносился в тест окном, которое заметило красный). Требования: ассерты не ослаблять — все существующие проверки поведения чтения сохраняются на синтетических данных (тело пункта собирается из продолжений, вердикт судится по продолжению, negated-формы не инвертируются наобум); живой дым реестра оставить, но он не должен пинить конкретные пункты или точные количества. Критерии приёмки: тест зелёный на текущем снимке; остаётся зелёным, если из снимка пропадает один пункт; краснеет, если сломать классификацию вердиктов в читателе. Тест менять можно, читатель и снимок — нельзя."
+}

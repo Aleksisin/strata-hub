@@ -1,0 +1,20 @@
+{
+  "task": "i1-guard-scan-window",
+  "kind": "integration",
+  "base": "8a2219b1",
+  "overlay": [],
+  "overlay_commit": "8a2219b1",
+  "verify_tests": ["tests/test_guard_scan_window.py"],
+  "protected": ["DiagnosticPipeline/triage_scanner.py"],
+  "needs_venv": false,
+  "guard_test_file": "tests/test_guard_scan_window.py",
+  "verify_steps": [
+    {"run": "must_pass"},
+    {"mutate": {"file": "DiagnosticPipeline/triage_scanner.py",
+                "kind": "replace",
+                "old": "if len(parts) != 4:",
+                "new": "if len(parts) != 3:"},
+     "run": "must_fail"}
+  ],
+  "statement": "Напиши ограждающий тест tests/test_guard_scan_window.py, который ловит регрессию чтения окна в DiagnosticPipeline/triage_scanner.py: функция scan_window(request_path, compiled) разбирает строки окна формата «канал|id|штамп|текст» (служебные строки-разделители «===…» и битые строки пропускаются) и по скомпилированным паттернам словаря находит хиты со всеми полями (forecast_id, channel, message_id, stamp, source=\"window\", text). Тест — на СИНТЕТИЧЕСКОМ входе: временные файлы через tmp_path и свой маленький набор паттернов, живой triage_dictionary.yaml не использовать. Тест должен быть зелёным на текущем коде и краснеть, если разбор окна сломан (строки перестали разбираться или хиты потеряли поля). Производственный код (DiagnosticPipeline/triage_scanner.py) не менять. Проверяй себя run_tests."
+}
